@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>Peminjaman Alat</title>
+  <meta charset="UTF-8" />
+  <title>Form Peminjaman Alat</title>
   <style>
     body {
       font-family: sans-serif;
@@ -11,21 +11,39 @@
       text-align: center;
       padding: 20px;
     }
-    .konten, .log {
+
+    .konten {
       background: rgba(255, 255, 255, 0.1);
-      margin: 10px auto;
       padding: 20px;
       max-width: 500px;
+      margin: auto;
       border-radius: 10px;
     }
-    input, button {
-      margin: 5px;
+
+    input, select, button {
+      display: block;
+      margin: 10px auto;
       padding: 10px;
+      width: 90%;
       border-radius: 5px;
+      border: none;
     }
+
+    .inline-group {
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .inline-group select,
+    .inline-group input {
+      width: 45%;
+    }
+
     button {
       background: lightgreen;
       font-weight: bold;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -33,95 +51,75 @@
 
 <div class="konten">
   <h1>Peminjaman Alat</h1>
-  <input type="text" id="nama" placeholder="Masukkan nama" />
+  <form action="https://docs.google.com/forms/d/e/1FAIpQLSe1qHpOyE2nk6olV0NDBajMuhSx8hZ_gx9w8WZahac_645Zig/formResponse" method="POST" target="hidden_iframe" onsubmit="gabungkanDanSubmit(); return false;">
+    
+    <input type="text" name="entry.2147593403" id="nama" placeholder="Nama Lengkap" required>
 
-  <div class="alat">
-    <p>📘 Laptop - <span id="stok-laptop">10</span></p>
-    <button onclick="pinjam('Laptop')">Pinjam</button>
-    <button onclick="kembalikan('Laptop')">Kembalikan</button>
-  </div>
+    <select name="entry.725118559" id="alat" required>
+      <option value="">-- Pilih Alat --</option>
+      <option value="Laptop">📘 Laptop</option>
+      <option value="PC">🖥️ PC</option>
+      <option value="Keyboard">⌨️ Keyboard</option>
+      <option value="Mouse">🖱️ Mouse</option>
+    </select>
 
-  <div class="alat">
-    <p>🖥️ PC - <span id="stok-pc">10</span></p>
-    <button onclick="pinjam('PC')">Pinjam</button>
-    <button onclick="kembalikan('PC')">Kembalikan</button>
-  </div>
-</div>
+    <!-- Email -->
+    <div class="inline-group">
+      <input type="text" id="email-user" placeholder="Email (tanpa @)">
+      <select id="email-domain">
+        <option value="@gmail.com">@gmail.com</option>
+        <option value="@yahoo.com">@yahoo.com</option>
+        <option value="@outlook.com">@outlook.com</option>
+      </select>
+    </div>
+    <input type="hidden" name="entry.1912079637" id="email-full" required>
 
-<div class="log">
-  <h2>📋 Riwayat</h2>
-  <ul id="log"></ul>
+    <!-- WhatsApp -->
+    <div class="inline-group">
+      <select id="kode-wa">
+        <option value="+62">+62 (ID)</option>
+        <option value="+60">+60 (MY)</option>
+        <option value="+1">+1 (US)</option>
+      </select>
+      <input type="text" id="wa" placeholder="Nomor WhatsApp" required>
+    </div>
+    <input type="hidden" name="entry.1463242262" id="wa-full" required>
+
+    <!-- Tanggal -->
+    <input type="date" name="entry.1294861226" id="tanggal" required>
+
+    <button type="submit">Kirim</button>
+  </form>
+
+  <iframe name="hidden_iframe" style="display:none;"></iframe>
 </div>
 
 <script>
-  const stokAwal = 10;
-  const stok = {
-    Laptop: 10,
-    PC: 10
-  };
+function gabungkanDanSubmit() {
+  // Gabungkan email
+  const emailUser = document.getElementById("email-user").value.trim();
+  const emailDomain = document.getElementById("email-domain").value;
+  const fullEmail = emailUser + emailDomain;
+  document.getElementById("email-full").value = fullEmail;
 
-  const sheetURL = "https://script.google.com/macros/s/AKfycbwkw_TVgfwZhrbHv_-cc2Vor4VD7XgngxQFjzpjHY4os1gglgbgsUEL3_LjMRhpYu8Wxw/exec";
+  // Gabungkan WhatsApp
+  const kodeWA = document.getElementById("kode-wa").value;
+  const nomorWA = document.getElementById("wa").value.trim();
+  const fullWA = kodeWA + nomorWA;
+  document.getElementById("wa-full").value = fullWA;
 
-  function updateStokUI() {
-    for (let alat in stok) {
-      const id = "stok-" + alat.toLowerCase();
-      document.getElementById(id).innerText = stok[alat];
-    }
-  }
+  // Submit form
+  document.querySelector("form").submit();
 
-  function pinjam(alat) {
-    const nama = document.getElementById("nama").value.trim();
-    if (!nama) return alert("Masukkan nama dulu!");
-
-    if (stok[alat] > 0) {
-      stok[alat]--;
-      updateStokUI();
-      catat(nama, alat, "Pinjam");
-    } else {
-      alert("Stok habis!");
-    }
-  }
-
-  function kembalikan(alat) {
-    const nama = document.getElementById("nama").value.trim();
-    if (!nama) return alert("Masukkan nama dulu!");
-
-    if (stok[alat] < stokAwal) {
-      stok[alat]++;
-      updateStokUI();
-      catat(nama, alat, "Kembali");
-    } else {
-      alert("Semua alat sudah kembali.");
-    }
-  }
-
-  function catat(nama, alat, aksi) {
-    const waktu = new Date().toLocaleString();
-    const data = { Nama: nama, Alat: alat, Aksi: aksi, Waktu: waktu };
-
-    fetch(sheetURL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(data)
-    })
-    .then(async res => {
-      if (!res.ok) throw new Error("Respon tidak berhasil");
-      const result = await res.json();
-      console.log("✅ WebApp response:", result);
-    })
-    .catch(err => {
-      console.error("❌ Fetch error:", err);
-      alert("❌ Gagal mengirim data ke server.");
-    });
-
-    const li = document.createElement("li");
-    li.textContent = `${nama} ${aksi} ${alat} pada ${waktu}`;
-    document.getElementById("log").prepend(li);
-  }
-
-  updateStokUI();
+  alert("✅ Data berhasil dikirim!");
+  
+  // Reset form manual
+  document.getElementById("nama").value = "";
+  document.getElementById("alat").value = "";
+  document.getElementById("email-user").value = "";
+  document.getElementById("wa").value = "";
+  document.getElementById("tanggal").value = "";
+}
 </script>
 
 </body>
