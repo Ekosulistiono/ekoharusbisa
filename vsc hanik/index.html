@@ -2,124 +2,235 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Form Peminjaman Alat</title>
+  <title>Aplikasi Peminjaman Alat</title>
   <style>
     body {
       font-family: sans-serif;
-      background: #222;
-      color: white;
+      background: white;
+      color: #333;
+      padding: 20px;
       text-align: center;
-      padding: 20px;
     }
-
-    .konten {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 20px;
-      max-width: 500px;
-      margin: auto;
+    header {
+      border-bottom: 5px solid #007BFF;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+    .container, .login, .dashboard, .aksi, .riwayat, .pendaftar {
+      background: #f1f1f1;
       border-radius: 10px;
+      padding: 20px;
+      margin: 20px auto;
+      max-width: 500px;
     }
-
     input, select, button {
-      display: block;
-      margin: 10px auto;
+      margin: 10px;
       padding: 10px;
-      width: 90%;
       border-radius: 5px;
-      border: none;
+      border: 1px solid #ccc;
+      width: 80%;
     }
-
-    .inline-group {
-      display: flex;
-      justify-content: center;
-      gap: 5px;
-    }
-
-    .inline-group select,
-    .inline-group input {
-      width: 45%;
-    }
-
     button {
-      background: lightgreen;
+      background: #007BFF;
+      color: white;
       font-weight: bold;
       cursor: pointer;
+    }
+    .hidden {
+      display: none;
+    }
+    .flex-row {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
 
-<div class="konten">
-  <h1>Peminjaman Alat</h1>
-  <form action="https://docs.google.com/forms/d/e/1FAIpQLSe1qHpOyE2nk6olV0NDBajMuhSx8hZ_gx9w8WZahac_645Zig/formResponse" method="POST" target="hidden_iframe" onsubmit="gabungkanDanSubmit(); return false;">
-    
-    <input type="text" name="entry.2147593403" id="nama" placeholder="Nama Lengkap" required>
+<header>
+  <h1>Aplikasi Peminjaman Alat</h1>
+</header>
 
-    <select name="entry.725118559" id="alat" required>
-      <option value="">-- Pilih Alat --</option>
-      <option value="Laptop">📘 Laptop</option>
-      <option value="PC">🖥️ PC</option>
-      <option value="Keyboard">⌨️ Keyboard</option>
-      <option value="Mouse">🖱️ Mouse</option>
-    </select>
-
-    <!-- Email -->
-    <div class="inline-group">
-      <input type="text" id="email-user" placeholder="Email (tanpa @)">
-      <select id="email-domain">
-        <option value="@gmail.com">@gmail.com</option>
-        <option value="@yahoo.com">@yahoo.com</option>
-        <option value="@outlook.com">@outlook.com</option>
-      </select>
-    </div>
-    <input type="hidden" name="entry.1912079637" id="email-full" required>
-
-    <!-- WhatsApp -->
-    <div class="inline-group">
-      <select id="kode-wa">
-        <option value="+62">+62 (ID)</option>
-        <option value="+60">+60 (MY)</option>
-        <option value="+1">+1 (US)</option>
-      </select>
-      <input type="text" id="wa" placeholder="Nomor WhatsApp" required>
-    </div>
-    <input type="hidden" name="entry.1463242262" id="wa-full" required>
-
-    <!-- Tanggal -->
-    <input type="date" name="entry.1294861226" id="tanggal" required>
-
-    <button type="submit">Kirim</button>
-  </form>
-
-  <iframe name="hidden_iframe" style="display:none;"></iframe>
+<div class="login" id="login">
+  <h2>Login</h2>
+  <input type="text" id="username" placeholder="Username" required>
+  <input type="password" id="password" placeholder="Password" required>
+  <button onclick="login()">Masuk</button>
+  <p>Belum punya akun? <a href="#" onclick="showRegister()">Daftar di sini</a></p>
 </div>
 
+<div class="container hidden" id="register">
+  <h2>Daftar Akun</h2>
+  <input type="text" id="reg-nama" placeholder="Nama Lengkap" required>
+  <input type="email" id="reg-email" placeholder="Alamat Email" required>
+  <input type="text" id="reg-wa" placeholder="Nomor WhatsApp" required>
+  <input type="text" id="reg-user" placeholder="Username" required>
+  <input type="password" id="reg-pass" placeholder="Password" required>
+  <button onclick="register()">Daftar</button>
+  <p>Sudah punya akun? <a href="#" onclick="showLogin()">Login di sini</a></p>
+</div>
+
+<div class="dashboard hidden" id="dashboard">
+  <h2>Selamat datang, <span id="current-user"></span></h2>
+  <div id="user-actions" class="hidden">
+    <input type="text" id="namaUser" placeholder="Masukkan Nama Anda" required>
+    <div class="flex-row">
+      <button onclick="bukaForm('pinjam')">Peminjaman</button>
+      <button onclick="bukaForm('kembali')">Pengembalian</button>
+    </div>
+  </div>
+
+  <div id="admin-actions" class="hidden">
+    <button onclick="tampilkanRiwayat()">Lihat Riwayat</button>
+    <button onclick="tampilkanPendaftar()">Lihat Pendaftar</button>
+    <button onclick="downloadPDF('riwayat')">Download Riwayat PDF</button>
+    <button onclick="downloadPDF('pendaftar')">Download Pendaftar PDF</button>
+  </div>
+</div>
+
+<div class="aksi hidden" id="form-pinjam">
+  <h3>Form Peminjaman</h3>
+  <select id="alat-pinjam">
+    <option value="">-- Pilih Alat --</option>
+    <option value="Laptop">📘 Laptop</option>
+    <option value="PC">🖥️ PC</option>
+    <option value="Keyboard">⌨️ Keyboard</option>
+    <option value="Mouse">🖱️ Mouse</option>
+  </select>
+  <button onclick="catatAksi('Pinjam')">Kirim</button>
+</div>
+
+<div class="aksi hidden" id="form-kembali">
+  <h3>Form Pengembalian</h3>
+  <select id="alat-kembali">
+    <option value="">-- Pilih Alat --</option>
+    <option value="Laptop">📘 Laptop</option>
+    <option value="PC">🖥️ PC</option>
+    <option value="Keyboard">⌨️ Keyboard</option>
+    <option value="Mouse">🖱️ Mouse</option>
+  </select>
+  <button onclick="catatAksi('Kembali')">Kirim</button>
+</div>
+
+<div class="riwayat hidden" id="riwayat">
+  <h3>Riwayat Peminjaman & Pengembalian</h3>
+  <ul id="log"></ul>
+</div>
+
+<div class="pendaftar hidden" id="pendaftar">
+  <h3>Data Pendaftar</h3>
+  <ul id="list-pendaftar"></ul>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-function gabungkanDanSubmit() {
-  // Gabungkan email
-  const emailUser = document.getElementById("email-user").value.trim();
-  const emailDomain = document.getElementById("email-domain").value;
-  const fullEmail = emailUser + emailDomain;
-  document.getElementById("email-full").value = fullEmail;
+  let currentUser = "";
+  const riwayatData = [];
+  const userAccounts = [];
+  const daftarPendaftar = [];
 
-  // Gabungkan WhatsApp
-  const kodeWA = document.getElementById("kode-wa").value;
-  const nomorWA = document.getElementById("wa").value.trim();
-  const fullWA = kodeWA + nomorWA;
-  document.getElementById("wa-full").value = fullWA;
+  function showRegister() {
+    document.getElementById("login").classList.add("hidden");
+    document.getElementById("register").classList.remove("hidden");
+  }
 
-  // Submit form
-  document.querySelector("form").submit();
+  function showLogin() {
+    document.getElementById("register").classList.add("hidden");
+    document.getElementById("login").classList.remove("hidden");
+  }
 
-  alert("✅ Data berhasil dikirim!");
-  
-  // Reset form manual
-  document.getElementById("nama").value = "";
-  document.getElementById("alat").value = "";
-  document.getElementById("email-user").value = "";
-  document.getElementById("wa").value = "";
-  document.getElementById("tanggal").value = "";
-}
+  function register() {
+    const nama = document.getElementById("reg-nama").value.trim();
+    const email = document.getElementById("reg-email").value.trim();
+    const wa = document.getElementById("reg-wa").value.trim();
+    const username = document.getElementById("reg-user").value.trim();
+    const password = document.getElementById("reg-pass").value.trim();
+
+    if (!nama || !email || !wa || !username || !password) {
+      alert("Semua kolom harus diisi!");
+      return;
+    }
+
+    userAccounts.push({ username, password });
+    daftarPendaftar.push({ nama, email, wa });
+
+    alert("Pendaftaran berhasil! Silakan login.");
+    showLogin();
+  }
+
+  function login() {
+    const user = document.getElementById("username").value.trim();
+    const pass = document.getElementById("password").value.trim();
+
+    if ((user === "admin" && pass === "1234") || userAccounts.some(u => u.username === user && u.password === pass)) {
+      currentUser = user;
+      document.getElementById("login").classList.add("hidden");
+      document.getElementById("dashboard").classList.remove("hidden");
+      document.getElementById("current-user").innerText = user;
+      if (user === "admin") {
+        document.getElementById("admin-actions").classList.remove("hidden");
+      } else {
+        document.getElementById("user-actions").classList.remove("hidden");
+      }
+    } else {
+      alert("Login gagal. Username/password salah.");
+    }
+  }
+
+  function bukaForm(jenis) {
+    document.getElementById("form-pinjam").classList.add("hidden");
+    document.getElementById("form-kembali").classList.add("hidden");
+    document.getElementById("form-" + jenis).classList.remove("hidden");
+  }
+
+  function catatAksi(aksi) {
+    const nama = document.getElementById("namaUser").value.trim();
+    const alat = document.getElementById(aksi === "Pinjam" ? "alat-pinjam" : "alat-kembali").value;
+    const waktu = new Date().toLocaleString();
+    if (!nama || !alat) return alert("Mohon isi nama dan pilih alat.");
+
+    const data = `${waktu} - ${nama} melakukan ${aksi} alat: ${alat}`;
+    riwayatData.push(data);
+    alert("✅ " + aksi + " berhasil!");
+  }
+
+  function tampilkanRiwayat() {
+    const list = document.getElementById("log");
+    list.innerHTML = "";
+    riwayatData.forEach(item => {
+      const li = document.createElement("li");
+      li.textContent = item;
+      list.appendChild(li);
+    });
+    document.getElementById("riwayat").classList.remove("hidden");
+  }
+
+  function tampilkanPendaftar() {
+    const list = document.getElementById("list-pendaftar");
+    list.innerHTML = "";
+    daftarPendaftar.forEach(p => {
+      const li = document.createElement("li");
+      li.textContent = `${p.nama} - ${p.email} - ${p.wa}`;
+      list.appendChild(li);
+    });
+    document.getElementById("pendaftar").classList.remove("hidden");
+  }
+
+  function downloadPDF(jenis) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const dataList = jenis === 'riwayat' ? riwayatData : daftarPendaftar.map(p => `${p.nama} - ${p.email} - ${p.wa}`);
+    doc.setFontSize(12);
+    doc.text(jenis === 'riwayat' ? "Riwayat Peminjaman & Pengembalian:" : "Data Pendaftar:", 10, 10);
+
+    dataList.forEach((item, index) => {
+      doc.text(`- ${item}`, 10, 20 + index * 10);
+    });
+
+    doc.save(jenis + ".pdf");
+  }
 </script>
 
 </body>
