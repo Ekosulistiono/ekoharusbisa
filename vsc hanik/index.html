@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Peminjaman Alat</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #222;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    .konten, .log {
+      background: rgba(255, 255, 255, 0.1);
+      margin: 10px auto;
+      padding: 20px;
+      max-width: 500px;
+      border-radius: 10px;
+    }
+    input, button {
+      margin: 5px;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    button {
+      background: lightgreen;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<div class="konten">
+  <h1>Peminjaman Alat</h1>
+  <input type="text" id="nama" placeholder="Masukkan nama" />
+
+  <div class="alat">
+    <p>📘 Laptop - <span id="stok-laptop">10</span></p>
+    <button onclick="pinjam('Laptop')">Pinjam</button>
+    <button onclick="kembalikan('Laptop')">Kembalikan</button>
+  </div>
+
+  <div class="alat">
+    <p>🖥️ PC - <span id="stok-pc">10</span></p>
+    <button onclick="pinjam('PC')">Pinjam</button>
+    <button onclick="kembalikan('PC')">Kembalikan</button>
+  </div>
+</div>
+
+<div class="log">
+  <h2>📋 Riwayat</h2>
+  <ul id="log"></ul>
+</div>
+
+<script>
+  const stokAwal = 10;
+  const stok = {
+    Laptop: 10,
+    PC: 10
+  };
+
+  const sheetURL = "https://script.google.com/macros/s/AKfycbwMuJKzhsYEuQ4EeBj9NCB04SRmTAWXd1Ok6Z-vb6hRTfchQckD4nFvRgZ2CwW4uMRdrQ/exec";
+
+  function updateStokUI() {
+    for (let alat in stok) {
+      const id = "stok-" + alat.toLowerCase();
+      document.getElementById(id).innerText = stok[alat];
+    }
+  }
+
+  function pinjam(alat) {
+    const nama = document.getElementById("nama").value.trim();
+    if (!nama) return alert("Masukkan nama dulu!");
+
+    if (stok[alat] > 0) {
+      stok[alat]--;
+      updateStokUI();
+      catat(nama, alat, "Pinjam");
+    } else {
+      alert("Stok habis!");
+    }
+  }
+
+  function kembalikan(alat) {
+    const nama = document.getElementById("nama").value.trim();
+    if (!nama) return alert("Masukkan nama dulu!");
+
+    if (stok[alat] < stokAwal) {
+      stok[alat]++;
+      updateStokUI();
+      catat(nama, alat, "Kembali");
+    } else {
+      alert("Semua alat sudah kembali.");
+    }
+  }
+
+  function catat(nama, alat, aksi) {
+    const waktu = new Date().toLocaleString();
+    const data = { Nama: nama, Alat: alat, Aksi: aksi, Waktu: waktu };
+
+    fetch(sheetURL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
+    })
+    .then(async res => {
+      if (!res.ok) throw new Error("Respon tidak berhasil");
+      const result = await res.json();
+      console.log("✅ WebApp response:", result);
+    })
+    .catch(err => {
+      console.error("❌ Fetch error:", err);
+      alert("❌ Gagal mengirim data ke server.");
+    });
+
+    const li = document.createElement("li");
+    li.textContent = `${nama} ${aksi} ${alat} pada ${waktu}`;
+    document.getElementById("log").prepend(li);
+  }
+
+  updateStokUI();
+</script>
+
+</body>
+</html>
